@@ -99,43 +99,29 @@ const submitBtnIcon = submitBtn.querySelector('i');
 contactForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     
-    // Get form data
-    const formData = new FormData(contactForm);
-    const formObject = Object.fromEntries(formData);
-    
-    // Validate form data
-    if (!validateForm(formObject)) {
-        return;
-    }
-
     // Show loading state
     submitBtn.disabled = true;
     submitBtnText.textContent = 'Sending...';
     submitBtnIcon.className = 'fas fa-spinner fa-spin';
 
     try {
+        const formData = new FormData(contactForm);
         const response = await fetch('https://api.web3forms.com/submit', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
                 'Accept': 'application/json'
             },
-            body: JSON.stringify({
-                access_key: 'af9492b7-dd5b-45d6-b7ce-3b86f01f9ff7',
-                name: formObject.from_name,
-                email: formObject.from_email,
-                subject: formObject.subject,
-                message: formObject.message
-            })
+            body: new FormData(contactForm)
         });
 
-        const result = await response.json();
-        
-        if (result.success) {
-            showMessage('Message sent successfully!', 'success');
+        const data = await response.json();
+
+        if (data.success) {
+            // Show success message
+            showMessage('Thank you! Your message has been sent successfully.', 'success');
             contactForm.reset();
         } else {
-            throw new Error(result.message || 'Failed to send message');
+            throw new Error(data.message || 'Something went wrong!');
         }
     } catch (error) {
         console.error('Form submission error:', error);
@@ -148,51 +134,18 @@ contactForm.addEventListener('submit', async (e) => {
     }
 });
 
-// Form validation
-function validateForm(data) {
-    const { from_name, from_email, subject, message } = data;
-    
-    // Name validation
-    if (from_name.length < 2) {
-        showMessage('Name must be at least 2 characters long', 'error');
-        return false;
-    }
-
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(from_email)) {
-        showMessage('Please enter a valid email address', 'error');
-        return false;
-    }
-
-    // Subject validation
-    if (subject.length < 3) {
-        showMessage('Subject must be at least 3 characters long', 'error');
-        return false;
-    }
-
-    // Message validation
-    if (message.length < 5) {
-        showMessage('Message must be at least 5 characters long', 'error');
-        return false;
-    }
-
-    return true;
-}
-
 // Show message function
 function showMessage(message, type) {
-    // Create message element
-    const messageElement = document.createElement('div');
-    messageElement.className = `message ${type}`;
-    messageElement.textContent = message;
-
-    // Add message to form
-    contactForm.insertBefore(messageElement, submitBtn);
-
-    // Remove message after 5 seconds
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${type}`;
+    messageDiv.textContent = message;
+    
+    // Add the message to the form
+    contactForm.insertAdjacentElement('beforebegin', messageDiv);
+    
+    // Remove the message after 5 seconds
     setTimeout(() => {
-        messageElement.remove();
+        messageDiv.remove();
     }, 5000);
 }
 
