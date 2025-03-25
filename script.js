@@ -136,12 +136,15 @@ contactForm.addEventListener('submit', async (e) => {
 
 // Show message function
 function showMessage(message, type) {
+    const messageContainer = document.querySelector('.form-message-container');
+    messageContainer.innerHTML = ''; // Clear any existing messages
+    
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${type}`;
     messageDiv.textContent = message;
     
-    // Add the message to the form
-    contactForm.insertAdjacentElement('beforebegin', messageDiv);
+    // Add the message to the container
+    messageContainer.appendChild(messageDiv);
     
     // Remove the message after 5 seconds
     setTimeout(() => {
